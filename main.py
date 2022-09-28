@@ -78,7 +78,7 @@ def divide_and_insert(conn, cursor, head):
     except (psycopg.errors.ForeignKeyViolation, psycopg.errors.UniqueViolation):
         conn.rollback()
         ln = len(head)//2
-        if ln < 100:
+        if ln < 1000:
             insert_by_one(conn, cursor, head)
             return
         divide_and_insert(conn, cursor, head[:ln])
