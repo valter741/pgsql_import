@@ -26,9 +26,9 @@ def load_author():
                 if item is None:
                     break
                 head.append((item['id'], item['name'].replace('\x00', ''), item['username'],
-                             json.dumps(item['description'], ensure_ascii=False).encode('utf8').decode(), item['public_metrics']['followers_count'],
-                             item['public_metrics']['following_count'], item['public_metrics']['tweet_count'],
-                             item['public_metrics']['listed_count']))
+                             json.dumps(item['description'], ensure_ascii=False).encode('utf8').decode(),
+                             item['public_metrics']['followers_count'], item['public_metrics']['following_count'],
+                             item['public_metrics']['tweet_count'], item['public_metrics']['listed_count']))
 
             cursor = conn.cursor()
             try:
@@ -50,10 +50,11 @@ def load_author():
             del head
     conn.close()
 
+
 def create_convo():
     conn = psycopg.connect(dbname="postgres", user="postgres", password="asd123")
     cursor = conn.cursor()
-    cursor.execute("CREATE TABLE IF NOT EXISTS public.conversations (id int8 PRIMARY KEY, author_id int8, content text, possibly_sensitive bool, language varchar(3), source text, retweet_count int4, reply_count int4, like_count int4, quote_count int4, created_at timestamp with time zone);")
+    cursor.execute("CREATE TABLE IF NOT EXISTS public.conversations (id int8, author_id int8, content text, possibly_sensitive bool, language varchar(3), source text, retweet_count int4, reply_count int4, like_count int4, quote_count int4, created_at timestamp with time zone);")
     conn.commit()
     cursor.close()
     conn.close()
@@ -62,9 +63,7 @@ def create_convo():
 def insert_by_one(conn, cursor, head):
     for record in head:
         try:
-            cursor.execute(
-                "INSERT INTO conversations (id, author_id, content, possibly_sensitive, language, source, retweet_count, reply_count, like_count, quote_count, created_at) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING",
-                record)
+            cursor.execute("INSERT INTO conversations (id, author_id, content, possibly_sensitive, language, source, retweet_count, reply_count, like_count, quote_count, created_at) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", record)
         except psycopg.errors.ForeignKeyViolation:
             conn.rollback()
 
@@ -83,7 +82,6 @@ def divide_and_insert(conn, cursor, head):
             return
         divide_and_insert(conn, cursor, head[:ln])
         divide_and_insert(conn, cursor, head[ln:])
-
 
 
 def load_convo():
@@ -118,7 +116,6 @@ def load_convo():
                             record)
                     except psycopg.errors.ForeignKeyViolation:
                         conn.rollback()'''
-
             conn.commit()
             cursor.close()
             print("done", count, datetime.now() - START)
